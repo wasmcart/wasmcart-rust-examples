@@ -1,0 +1,7 @@
+{
+  "title": "Starwell",
+  "description": "Fly a glider down an endless crystal canyon. Thread the glowing rings for energy and points, dodge the crystals, and reach sector 2.",
+  "author": "wasmcart-rust-examples",
+  "controls": "left_stick,dpad,a,start",
+  "players": 1
+}
