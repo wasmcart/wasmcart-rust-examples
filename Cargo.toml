@@ -1,0 +1,14 @@
+[workspace]
+resolver = "2"
+members = ["games/*"]
+
+# macroquad games: miniquad with the wasmcart backend (wasmcart-macroquad).
+[patch.crates-io]
+miniquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "bae359f" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

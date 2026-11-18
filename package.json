@@ -1,0 +1,15 @@
+{
+  "name": "wasmcart-rust-examples",
+  "private": true,
+  "description": "Rust games built as wasmcart carts: macroquad and wgpu.",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "scripts/build.sh",
+    "test": "scripts/test.sh"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.0",
+    "wasmcart": "^0.41.2"
+  }
+}
