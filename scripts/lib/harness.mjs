@@ -94,7 +94,7 @@ export async function boot(file, opts = {}) {
 /** One pad: `buttons` mask plus optional sticks in -1..1. */
 export function pad(buttons = 0, { lx = 0, ly = 0, rx = 0, ry = 0 } = {}) {
   const ax = (v) => Math.max(-32768, Math.min(32767, Math.round(v * 32767)));
-  return { connected: true, buttons, left_x: ax(lx), left_y: ax(ly), right_x: ax(rx), right_y: ax(ry) };
+  return { connected: true, buttons, leftX: ax(lx), leftY: ax(ly), rightX: ax(rx), rightY: ax(ry) };
 }
 /** A connected pad nobody touches (the idle second seat). */
 export const idle = () => pad(0);
