@@ -1,0 +1,9 @@
+[package]
+name = "floe"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+macroquad = { version = "0.4", features = ["audio"] }
+wasmcart-macroquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "bae359f", features = ["debug"] }
