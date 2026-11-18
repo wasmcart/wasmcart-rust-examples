@@ -1,0 +1,7 @@
+{
+  "title": "Hexbloom",
+  "description": "A twin-stick arena shooter in a glowing hex garden. Clear eight waves of seeds, darters and splitters, and the two great thorn flowers that guard them.",
+  "author": "wasmcart-rust-examples",
+  "controls": "left_stick,right_stick,dpad,a,b,start",
+  "players": 1
+}
