@@ -1,5 +1,10 @@
 # wasmcart-rust-examples
 
+<table>
+<tr><td align="center"><a href="#hexbloom-macroquad"><img src="games/hexbloom/art/screenshot-2.png" width="300" alt="Hexbloom"></a><br><b>Hexbloom</b></td><td align="center"><a href="#tetherline-macroquad"><img src="games/tetherline/art/screenshot-1.png" width="300" alt="Tetherline"></a><br><b>Tetherline</b></td><td align="center"><a href="#bumper-floe-macroquad-1-to-4-players"><img src="games/floe/art/screenshot-1.png" width="300" alt="Bumper Floe"></a><br><b>Bumper Floe</b></td></tr>
+<tr><td align="center"><a href="#starwell-wgpu-3d"><img src="games/starwell/art/screenshot-1.png" width="300" alt="Starwell"></a><br><b>Starwell</b></td><td align="center"><a href="#hillfold-bevy-3d"><img src="games/hillfold/art/screenshot-1.png" width="300" alt="Hillfold"></a><br><b>Hillfold</b></td><td align="center"><a href="#lantern-links-bevy-2d"><img src="games/lantern-links/art/screenshot-1.png" width="300" alt="Lantern Links"></a><br><b>Lantern Links</b></td></tr>
+</table>
+
 Six original games written in Rust and built as
 [wasmcart](https://github.com/wasmcart/wasmcart) carts. A `.wasc` holds a
 WebAssembly program plus its assets and runs unmodified on every wasmcart
