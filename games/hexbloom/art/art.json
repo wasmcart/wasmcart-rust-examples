@@ -1,0 +1,17 @@
+{
+  "icon": "icon.png",
+  "cover": "cover.jpg",
+  "background": "background.jpg",
+  "logo": "logo.png",
+  "title": "title.png",
+  "screenshots": [
+    {
+      "path": "screenshot-1.png",
+      "label": "A swarm of seeds and darters closing in on the gardener"
+    },
+    {
+      "path": "screenshot-2.png",
+      "label": "The thorn flower spraying rings of thorns over a blooming floor"
+    }
+  ]
+}

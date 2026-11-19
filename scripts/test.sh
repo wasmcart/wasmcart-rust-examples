@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The gate: generate nothing, build every game, then run every game's checks
+# The gate: build every game, then run every game's checks
 # on the wasmcart Node host (real GL, real WebGPU on a core device and in
 # compatibility mode).
 #

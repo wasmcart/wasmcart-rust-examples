@@ -6,4 +6,4 @@ publish = false
 
 [dependencies]
 macroquad = { version = "0.4", features = ["audio"] }
-wasmcart-macroquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "bae359f", features = ["debug"] }
+wasmcart-macroquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "eb7b0f5", features = ["debug"] }

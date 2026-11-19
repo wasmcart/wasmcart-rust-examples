@@ -9,7 +9,7 @@
     "test": "scripts/test.sh"
   },
   "devDependencies": {
-    "playwright": "^1.62.0",
+    "playwright": "1.62.0",
     "wasmcart": "^0.41.2"
   }
 }

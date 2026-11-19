@@ -1,0 +1,17 @@
+{
+  "icon": "icon.png",
+  "cover": "cover.jpg",
+  "background": "background.jpg",
+  "logo": "logo.png",
+  "title": "title.png",
+  "screenshots": [
+    {
+      "path": "screenshot-1.png",
+      "label": "Swinging on a tether over the first gap of the meadow"
+    },
+    {
+      "path": "screenshot-2.png",
+      "label": "Crumbling ledges over a bed of spikes on the third island"
+    }
+  ]
+}
