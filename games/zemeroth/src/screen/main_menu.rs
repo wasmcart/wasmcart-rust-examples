@@ -10,6 +10,7 @@ use ui::{self, Widget};
 use crate::{
     assets,
     core::battle::{scenario, state},
+    input::Pad,
     screen::{self, Screen, StackCommand},
     utils, ZResult,
 };
@@ -31,7 +32,12 @@ fn make_gui() -> ZResult<ui::Gui<Message>> {
     let space = || Box::new(ui::Spacer::new_vertical(h / 8.0));
     let button = &mut |text, message| -> ZResult<_> {
         let text = ui::Drawable::text(text, font);
-        let b = ui::Button::new(text, h, gui.sender(), message)?.stretchable(true);
+        let mut b = ui::Button::new(text, h, gui.sender(), message)?.stretchable(true);
+        if let Message::StartCampaign = message {
+            // A gamepad starts on the campaign: its first battle is the
+            // gentlest.
+            b = b.default_focus();
+        }
         Ok(Box::new(b))
     };
     let mut layout = Box::new(ui::VLayout::new().stretchable(true));
@@ -106,5 +112,20 @@ impl Screen for MainMenu {
     fn move_mouse(&mut self, pos: Vec2) -> ZResult {
         self.gui.move_mouse(pos);
         Ok(())
+    }
+
+    fn pad(&mut self, pad: &Pad) -> ZResult<StackCommand> {
+        match screen::menu_nav(&mut self.gui, pad) {
+            Some(pos) => self.click(pos),
+            None => Ok(StackCommand::None),
+        }
+    }
+
+    fn prompts(&self) -> Vec<screen::Prompt> {
+        vec![("D-pad", "move"), ("A", "choose")]
+    }
+
+    fn kind(&self) -> i32 {
+        1
     }
 }

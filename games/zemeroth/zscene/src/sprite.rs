@@ -7,6 +7,20 @@ use mq::{
     texture::{self, DrawTextureParams, Texture2D},
 };
 
+/// Draws `text` one glyph at a time. macroquad 0.4.16's `draw_text_ex` adds
+/// kerning in glyph pixels to positions in world units, so with a font scaled
+/// to a camera (`camera_font_scale`) every kerned pair ("Yo", "Sw", "ov")
+/// throws the rest of the line far away. A single glyph has no pair to kern;
+/// `measure_text` never kerns, so widths still agree with it.
+fn draw_text_unkerned(text: &str, x: f32, y: f32, params: text::TextParams) {
+    let mut x = x;
+    let mut buf = [0u8; 4];
+    for ch in text.chars() {
+        let glyph = ch.encode_utf8(&mut buf);
+        x += text::draw_text_ex(glyph, x, y, params.clone()).width;
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Facing {
     Left,
@@ -26,7 +40,9 @@ enum Drawable {
 impl Drawable {
     fn dimensions(&self) -> Rect {
         match *self {
-            Drawable::Texture(ref texture) => Rect::new(0.0, 0.0, texture.width(), texture.height()),
+            Drawable::Texture(ref texture) => {
+                Rect::new(0.0, 0.0, texture.width(), texture.height())
+            }
             Drawable::Text {
                 ref label,
                 ref font,
@@ -217,7 +233,7 @@ impl Sprite {
                 font,
                 font_size,
             } => {
-                text::draw_text_ex(
+                draw_text_unkerned(
                     label,
                     data.pos.x,
                     data.pos.y + (data.dimensions.y + data.dimensions.h) * data.scale.y * 0.5,

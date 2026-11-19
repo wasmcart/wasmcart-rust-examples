@@ -10,6 +10,7 @@ use crate::{
         ability::{Ability, PassiveAbility},
         component::{self, Component, ObjType, Prototypes},
     },
+    input::Pad,
     screen::{self, Screen, StackCommand},
     utils, ZResult,
 };
@@ -183,7 +184,9 @@ fn button_back(gui: &mut ui::Gui<Message>, layout_width: f32) -> ZResult<Box<dyn
     let h = utils::line_heights().normal;
     let text = ui::Drawable::text("back", font);
     let msg = Message::Back;
-    let mut button = ui::Button::new(text, h, gui.sender(), msg)?.stretchable(true);
+    let mut button = ui::Button::new(text, h, gui.sender(), msg)?
+        .stretchable(true)
+        .default_focus();
     button.stretch(layout_width / 3.0);
     button.set_stretchable(false);
     Ok(Box::new(button))
@@ -280,5 +283,19 @@ impl Screen for AgentInfo {
     fn move_mouse(&mut self, pos: Vec2) -> ZResult {
         self.gui.move_mouse(pos);
         Ok(())
+    }
+
+    fn pad(&mut self, pad: &Pad) -> ZResult<StackCommand> {
+        if pad.b {
+            return Ok(StackCommand::Pop);
+        }
+        match screen::menu_nav(&mut self.gui, pad) {
+            Some(pos) => self.click(pos),
+            None => Ok(StackCommand::None),
+        }
+    }
+
+    fn kind(&self) -> i32 {
+        7
     }
 }

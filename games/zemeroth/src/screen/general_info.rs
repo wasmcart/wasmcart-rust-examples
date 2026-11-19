@@ -5,7 +5,8 @@ use ui::{self, Gui, Widget};
 
 use crate::{
     assets,
-    screen::{Screen, StackCommand},
+    input::Pad,
+    screen::{self, Screen, StackCommand},
     utils, ZResult,
 };
 
@@ -37,8 +38,9 @@ impl GeneralInfo {
         }
         layout.add(spacer());
         {
-            let mut button =
-                ui::Button::new(text_("back"), h, gui.sender(), Message::Back)?.stretchable(true);
+            let mut button = ui::Button::new(text_("back"), h, gui.sender(), Message::Back)?
+                .stretchable(true)
+                .default_focus();
             button.stretch(layout.rect().w / 3.0);
             button.set_stretchable(false);
             layout.add(Box::new(button));
@@ -76,5 +78,19 @@ impl Screen for GeneralInfo {
     fn move_mouse(&mut self, pos: Vec2) -> ZResult {
         self.gui.move_mouse(pos);
         Ok(())
+    }
+
+    fn pad(&mut self, pad: &Pad) -> ZResult<StackCommand> {
+        if pad.b {
+            return Ok(StackCommand::Pop);
+        }
+        match screen::menu_nav(&mut self.gui, pad) {
+            Some(pos) => self.click(pos),
+            None => Ok(StackCommand::None),
+        }
+    }
+
+    fn kind(&self) -> i32 {
+        6
     }
 }

@@ -8,7 +8,8 @@ use ui::{self, Gui, Widget};
 
 use crate::{
     assets,
-    screen::{Screen, StackCommand},
+    input::Pad,
+    screen::{self, Screen, StackCommand},
     utils, ZResult,
 };
 
@@ -60,7 +61,7 @@ impl Confirm {
         let button_width = widget.rect().w / 3.0;
         let mut yes = button("yes", Message::Yes)?;
         yes.stretch(button_width);
-        let mut no = button("no", Message::No)?;
+        let mut no = button("no", Message::No)?.default_focus();
         no.stretch(button_width);
         let spacer_width = widget.rect().w - yes.rect().w - no.rect().w;
         let mut line_layout = ui::HLayout::new();
@@ -108,5 +109,26 @@ impl Screen for Confirm {
     fn move_mouse(&mut self, pos: Vec2) -> ZResult {
         self.gui.move_mouse(pos);
         Ok(())
+    }
+
+    fn pad(&mut self, pad: &Pad) -> ZResult<StackCommand> {
+        if pad.b {
+            self.sender
+                .send(Message::No)
+                .expect("Can't report back the result");
+            return Ok(StackCommand::Pop);
+        }
+        match screen::menu_nav(&mut self.gui, pad) {
+            Some(pos) => self.click(pos),
+            None => Ok(StackCommand::None),
+        }
+    }
+
+    fn prompts(&self) -> Vec<screen::Prompt> {
+        vec![("D-pad", "move"), ("A", "choose"), ("B", "no")]
+    }
+
+    fn kind(&self) -> i32 {
+        5
     }
 }

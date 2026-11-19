@@ -19,6 +19,7 @@ use crate::{
         },
         campaign::{Action, Mode, State},
     },
+    input::Pad,
     screen::{self, Screen, StackCommand},
     utils, ZResult,
 };
@@ -162,7 +163,9 @@ fn build_panel_actions(gui: &mut ui::Gui<Message>, state: &State) -> ZResult<Box
         );
         let text = ui::Drawable::text(text, font);
         let command = Message::StartBattle;
-        let button = ui::Button::new(text, h, gui.sender(), command)?.stretchable(true);
+        let button = ui::Button::new(text, h, gui.sender(), command)?
+            .stretchable(true)
+            .default_focus();
         layout.add(Box::new(button));
     }
     layout.stretch_to_self();
@@ -205,6 +208,7 @@ impl Campaign {
 
     fn set_mode(&mut self, mode: Mode) -> ZResult {
         self.clean_ui()?;
+        self.gui.reset_focus();
         match mode {
             Mode::PreparingForBattle => self.set_mode_preparing()?,
             Mode::Won => self.set_mode_won()?,
@@ -284,6 +288,7 @@ impl Campaign {
 
 impl Screen for Campaign {
     fn update(&mut self, _dtime: Duration) -> ZResult<StackCommand> {
+        self.publish_debug();
         if let Some(result) = utils::try_receive(&self.receiver_battle_result) {
             if let Some(result) = result {
                 self.state
@@ -315,6 +320,56 @@ impl Screen for Campaign {
             "screen::Campaign: click: pos={:?}, message={:?}",
             pos, message
         );
+        self.handle_message(message)
+    }
+
+    fn resize(&mut self, aspect_ratio: f32) {
+        self.gui.resize_if_needed(aspect_ratio);
+    }
+
+    fn move_mouse(&mut self, pos: Vec2) -> ZResult {
+        self.gui.move_mouse(pos);
+        Ok(())
+    }
+
+    fn pad(&mut self, pad: &Pad) -> ZResult<StackCommand> {
+        if pad.start || pad.b {
+            return self.handle_message(Some(Message::Menu));
+        }
+        match screen::menu_nav(&mut self.gui, pad) {
+            Some(pos) => self.click(pos),
+            None => Ok(StackCommand::None),
+        }
+    }
+
+    fn prompts(&self) -> Vec<screen::Prompt> {
+        vec![("D-pad", "move"), ("A", "choose"), ("Start", "menu")]
+    }
+
+    fn kind(&self) -> i32 {
+        2
+    }
+}
+
+impl Campaign {
+    /// Publishes the campaign's progress as debug values.
+    pub fn publish_debug(&self) {
+        use wasmcart_macroquad::debug;
+        debug::set_i32(
+            "campaign_battle",
+            self.state.current_scenario_index() as i32,
+        );
+        debug::set_i32("campaign_agents", self.state.agents().len() as i32);
+        debug::set_i32("campaign_renown", self.state.renown().0);
+        let mode = match self.state.mode() {
+            Mode::PreparingForBattle => 0,
+            Mode::Won => 1,
+            Mode::Failed => 2,
+        };
+        debug::set_i32("campaign_mode", mode);
+    }
+
+    fn handle_message(&mut self, message: Option<Message>) -> ZResult<StackCommand> {
         match message {
             Some(Message::StartBattle) => {
                 let screen = self.start_battle()?;
@@ -352,14 +407,5 @@ impl Screen for Campaign {
             }
             None => Ok(StackCommand::None),
         }
-    }
-
-    fn resize(&mut self, aspect_ratio: f32) {
-        self.gui.resize_if_needed(aspect_ratio);
-    }
-
-    fn move_mouse(&mut self, pos: Vec2) -> ZResult {
-        self.gui.move_mouse(pos);
-        Ok(())
     }
 }

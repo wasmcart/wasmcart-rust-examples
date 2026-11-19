@@ -40,12 +40,15 @@ use crate::{
     ZResult,
 };
 
+mod autopilot;
+mod pad;
 mod view;
 mod visualize;
 
 #[derive(Clone, Debug)]
 enum Message {
     Exit,
+    Back,
     EndTurn,
     Ability(Ability),
     PassiveAbilityInfo(PassiveAbility),
@@ -73,7 +76,12 @@ fn line_with_info_button(
 }
 
 // TODO: consider moving ui `build_*` functions to a sub-module
-fn build_panel_agent_info(gui: &mut Gui<Message>, state: &State, id: Id) -> ZResult<ui::RcWidget> {
+fn build_panel_agent_info(
+    gui: &mut Gui<Message>,
+    state: &State,
+    id: Id,
+    anchor: ui::Anchor,
+) -> ZResult<ui::RcWidget> {
     let font = &assets::get().font;
     let parts = state.parts();
     let st = parts.strength.get(id);
@@ -102,8 +110,9 @@ fn build_panel_agent_info(gui: &mut Gui<Message>, state: &State, id: Id) -> ZRes
             drawable_k: 0.3,
             ..Default::default()
         };
-        let label_dot = ui::Label::from_params(ui::Drawable::Texture(textures().dot.clone()), h, param)?
-            .with_color(dot_color);
+        let label_dot =
+            ui::Label::from_params(ui::Drawable::Texture(textures().dot.clone()), h, param)?
+                .with_color(dot_color);
         line.add(Box::new(label_dot));
         line.add(Box::new(ui::Spacer::new_horizontal(h * 0.1)));
         line.add(label(arg)?);
@@ -211,7 +220,6 @@ fn build_panel_agent_info(gui: &mut Gui<Message>, state: &State, id: Id) -> ZRes
     layout.stretch_to_self();
     let layout = utils::add_offsets_and_bg(layout, utils::OFFSET_SMALL)?;
     let layout = ui::pack(layout);
-    let anchor = ui::Anchor(ui::HAnchor::Left, ui::VAnchor::Bottom);
     gui.add(&layout, anchor);
     Ok(layout)
 }
@@ -232,7 +240,10 @@ fn build_panel_agent_abilities(
     let h = line_heights().large;
     for ability in abilities {
         let icons = &assets::get().textures.icons.abilities.clone();
-        let texture = icons.get(&ability.ability).expect("No such icon found").clone();
+        let texture = icons
+            .get(&ability.ability)
+            .expect("No such icon found")
+            .clone();
         let drawable = ui::Drawable::Texture(texture);
         let msg = Message::Ability(ability.ability);
         let mut button = ui::Button::new(drawable, h, gui.sender(), msg)?;
@@ -357,6 +368,12 @@ pub struct Battle {
     panel_end_turn: Option<ui::RcWidget>,
     sender: Sender<Option<BattleResult>>,
     confirmation_receiver_exit: Option<Receiver<screen::confirm::Message>>,
+
+    /// The gamepad's hex cursor and the x it keeps to while moving up and
+    /// down (see pad.rs).
+    cursor: PosHex,
+    cursor_anchor_x: f32,
+    autopilot: autopilot::Autopilot,
 }
 
 impl Battle {
@@ -366,6 +383,12 @@ impl Battle {
         prototypes: Prototypes,
         sender: Sender<Option<BattleResult>>,
     ) -> ZResult<Self> {
+        // Test switch: a nonzero `seed` debug value reseeds the dice before
+        // the battle is laid out, so a check can replay or vary battles.
+        let seed = wasmcart_macroquad::debug::input_i32("seed", 0);
+        if seed != 0 {
+            quad_rand::srand(seed as u64);
+        }
         let radius = scenario.map_radius;
         let mut view = BattleView::new(radius)?;
         let mut gui = make_gui()?;
@@ -378,7 +401,16 @@ impl Battle {
         actions.push(make_action_create_map(&state, &view)?);
         view.add_action(action::Sequence::new(actions).boxed());
         let panel_end_turn = Some(build_panel_end_turn(&mut gui)?);
+        let cursor = state::players_agent_ids(&state, PlayerId(0))
+            .first()
+            .map(|&id| state.parts().pos.get(id).0)
+            .unwrap_or(PosHex { q: 0, r: 0 });
+        let cursor_anchor_x = geom::hex_to_point(view.tile_size(), cursor).x;
+        view.show_current_tile_marker(cursor);
         Ok(Self {
+            cursor,
+            cursor_anchor_x,
+            autopilot: autopilot::Autopilot::new(radius),
             gui,
             view,
             mode: SelectionMode::Normal,
@@ -532,7 +564,8 @@ impl Battle {
             }
         }
         self.panel_abilities = build_panel_agent_abilities(gui, state, id, &mode)?;
-        self.panel_info = Some(build_panel_agent_info(gui, state, id)?);
+        let anchor = ui::Anchor(ui::HAnchor::Left, ui::VAnchor::Bottom);
+        self.panel_info = Some(build_panel_agent_info(gui, state, id, anchor)?);
         let map = self.pathfinder.map();
         self.view.set_mode(state, map, id, mode)?;
         self.mode = mode;
@@ -600,6 +633,11 @@ impl Battle {
     fn handle_click(&mut self, point: Vec2) -> ZResult {
         let pos = geom::point_to_hex(self.view.tile_size(), point);
         self.gui.click(point);
+        self.handle_click_pos(pos)
+    }
+
+    /// A click on the map at `pos`: the mouse's and the gamepad's A.
+    fn handle_click_pos(&mut self, pos: PosHex) -> ZResult {
         if self.block_timer.is_some() {
             return Ok(());
         }
@@ -639,6 +677,12 @@ impl Battle {
     }
 
     fn send_battle_result(&self, result: Option<BattleResult>) {
+        let code = match &result {
+            Some(r) if r.winner_id == PlayerId(0) => 1,
+            Some(_) => 2,
+            None => 3,
+        };
+        wasmcart_macroquad::debug::set_i32("last_result", code);
         let err_msg = "Can't report back a battle's result";
         self.sender.send(result).expect(err_msg);
     }
@@ -653,6 +697,13 @@ impl Screen for Battle {
         }
         self.view.tick(dtime);
         self.update_block_timer(dtime)?;
+        self.publish_debug();
+        if let Some(pad) = autopilot::tick(self) {
+            let command = self.pad(&pad)?;
+            if !matches!(command, StackCommand::None) {
+                return Ok(command);
+            }
+        }
         if self.block_timer.is_none() && !self.view.any_unfinished_actions() {
             if let Some(result) = self.state.battle_result().clone() {
                 self.send_battle_result(Some(result));
@@ -678,6 +729,7 @@ impl Screen for Battle {
             Some(Message::Exit) => {
                 return Ok(StackCommand::PushPopup(self.popup_confirm_exit()?));
             }
+            Some(Message::Back) => {}
             Some(Message::EndTurn) => {
                 assert!(self.block_timer.is_none());
                 self.end_turn()?;
@@ -707,11 +759,24 @@ impl Screen for Battle {
     fn move_mouse(&mut self, point: Vec2) -> ZResult {
         let pos = geom::point_to_hex(self.view.tile_size(), point);
         if self.state.map().is_inboard(pos) {
+            self.set_cursor(pos);
             self.view.show_current_tile_marker(pos);
         } else {
             self.view.hide_current_tile_marker();
         }
         self.gui.move_mouse(point);
         Ok(())
+    }
+
+    fn pad(&mut self, pad: &crate::input::Pad) -> ZResult<StackCommand> {
+        self.handle_pad(pad)
+    }
+
+    fn prompts(&self) -> Vec<screen::Prompt> {
+        self.pad_prompts()
+    }
+
+    fn kind(&self) -> i32 {
+        3
     }
 }

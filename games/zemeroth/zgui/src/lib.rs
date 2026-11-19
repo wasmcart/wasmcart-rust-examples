@@ -5,6 +5,7 @@ use std::{
     error::Error as StdError,
     fmt::{self, Debug},
     rc::Rc,
+    sync::atomic::{AtomicBool, Ordering},
     sync::mpsc::{channel, Receiver, Sender},
 };
 
@@ -24,10 +25,39 @@ pub const SPRITE_COLOR_INACTIVE: Color = Color::new(0.4, 0.4, 0.4, 0.5);
 pub const SPRITE_COLOR_BG: Color = Color::new(0.8, 0.8, 0.8, 0.5);
 pub const SPRITE_COLOR_BG_HIGHLIGHTED: Color = Color::new(0.9, 0.9, 0.9, 1.0);
 pub const SPRITE_COLOR_BUTTON_BORDER: Color = Color::new(0.0, 0.0, 0.0, 0.9);
+/// The outline around the button a gamepad has focused.
+pub const COLOR_FOCUS: Color = Color::new(0.85, 0.45, 0.0, 1.0);
 
 // TODO: Add ScrollArea widget
 
 pub type Result<T = ()> = std::result::Result<T, Error>;
+
+/// Whether gamepad focus outlines show: on while the player uses a pad (from
+/// the start), off once the mouse or a touch takes over. One switch for every
+/// GUI, since only one input device is in use at a time.
+static FOCUS_VISIBLE: AtomicBool = AtomicBool::new(true);
+
+pub fn set_focus_visible(value: bool) {
+    FOCUS_VISIBLE.store(value, Ordering::Relaxed);
+}
+
+pub fn is_focus_visible() -> bool {
+    FOCUS_VISIBLE.load(Ordering::Relaxed)
+}
+
+/// Draws `text` one glyph at a time. macroquad 0.4.16's `draw_text_ex` adds
+/// kerning in glyph pixels to positions in world units, so with a font scaled
+/// to a camera (`camera_font_scale`) every kerned pair ("Yo", "Sw", "ov")
+/// throws the rest of the line far away. A single glyph has no pair to kern;
+/// `measure_text` never kerns, so widths still agree with it.
+pub fn draw_text_unkerned(text: &str, x: f32, y: f32, params: TextParams) {
+    let mut x = x;
+    let mut buf = [0u8; 4];
+    for ch in text.chars() {
+        let glyph = ch.encode_utf8(&mut buf);
+        x += draw_text_ex(glyph, x, y, params.clone()).width;
+    }
+}
 
 /// A camera that shows `rect` with y growing downwards, as macroquad 0.3's
 /// `Camera2D::from_display_rect` did. macroquad 0.4 flips y once more for
@@ -166,7 +196,7 @@ impl Sprite {
                 let font_world_size = font_size as f32 * self.scale.x;
                 // let macroquad figure appropriate TextParams for currently active camera
                 let (font_size, font_scale, font_scale_aspect) = camera_font_scale(font_world_size);
-                draw_text_ex(
+                draw_text_unkerned(
                     label,
                     self.pos.x,
                     self.pos.y + (self.dimensions.y + self.dimensions.h) * self.scale.y * 0.5,
@@ -250,9 +280,20 @@ pub enum StretchStatus {
     Unstretchable,
 }
 
+/// A button a gamepad can focus: where it is, and whether a screen asked for
+/// it to take the focus first.
+#[derive(Clone, Copy, Debug)]
+pub struct Focusable {
+    pub rect: Rect,
+    pub is_default: bool,
+}
+
 pub trait Widget: Debug {
     fn draw(&self);
     fn click(&self, _: Vec2) {}
+
+    /// Adds the buttons inside this widget, for gamepad focus navigation.
+    fn collect_focusable(&self, _out: &mut Vec<Focusable>) {}
     fn move_mouse(&mut self, _: Vec2) {}
     fn rect(&self) -> Rect;
     fn set_pos(&mut self, pos: Vec2);
@@ -297,6 +338,11 @@ pub struct Gui<Message: Clone> {
     anchored_widgets: Vec<AnchoredWidget>,
     receiver: Receiver<Message>,
     sender: Sender<Message>,
+
+    /// The centre of the button a gamepad has focused. Buttons come and go
+    /// as a screen rebuilds its panels, so the focus is a point that snaps
+    /// to the nearest button rather than an index.
+    focus: Option<Vec2>,
 }
 
 impl<Message: Clone> Gui<Message> {
@@ -309,6 +355,7 @@ impl<Message: Clone> Gui<Message> {
             receiver,
             sender,
             aspect_ratio,
+            focus: None,
         }
     }
 
@@ -341,6 +388,114 @@ impl<Message: Clone> Gui<Message> {
         for AnchoredWidget { widget, .. } in &self.anchored_widgets {
             widget.borrow().draw();
         }
+        // A GUI shows the focus once a pad has moved it, or from the start when
+        // it names a default button (GUIs a pad never navigates show none).
+        if is_focus_visible() && (self.focus.is_some() || self.has_default_focus()) {
+            if let Some(f) = self.focused() {
+                let r = f.rect;
+                let t = 0.012;
+                shapes::draw_rectangle_lines(
+                    r.x - t,
+                    r.y - t,
+                    r.w + t * 2.0,
+                    r.h + t * 2.0,
+                    t * 2.0,
+                    COLOR_FOCUS,
+                );
+            }
+        }
+    }
+
+    fn focusables(&self) -> Vec<Focusable> {
+        let mut out = Vec::new();
+        for AnchoredWidget { widget, .. } in &self.anchored_widgets {
+            widget.borrow().collect_focusable(&mut out);
+        }
+        out
+    }
+
+    /// The focused button: the one nearest the focus point, or the default
+    /// one (else the first) when nothing has been focused yet.
+    fn focused(&self) -> Option<Focusable> {
+        let all = self.focusables();
+        match self.focus {
+            Some(p) => all.into_iter().min_by(|a, b| {
+                let da = a.rect.center().distance_squared(p);
+                let db = b.rect.center().distance_squared(p);
+                da.partial_cmp(&db).unwrap_or(std::cmp::Ordering::Equal)
+            }),
+            None => all
+                .iter()
+                .find(|f| f.is_default)
+                .or_else(|| all.first())
+                .copied(),
+        }
+    }
+
+    fn has_default_focus(&self) -> bool {
+        self.focusables().iter().any(|f| f.is_default)
+    }
+
+    /// Forgets the focus, so the default button takes it again (for a
+    /// screen that rebuilt its panels).
+    pub fn reset_focus(&mut self) {
+        self.focus = None;
+    }
+
+    /// True when this GUI has any button a gamepad can focus.
+    pub fn has_focusable(&self) -> bool {
+        !self.focusables().is_empty()
+    }
+
+    /// Moves the gamepad focus to the nearest button in direction `dir`
+    /// (screen space, y down). Shows the focus. Returns false when there is
+    /// no button that way.
+    pub fn focus_move(&mut self, dir: Vec2) -> bool {
+        let current = match self.focused() {
+            Some(f) => f,
+            None => return false,
+        };
+        let was_visible = is_focus_visible();
+        set_focus_visible(true);
+        self.focus = Some(current.rect.center());
+        if !was_visible {
+            // The first press only shows where the focus is.
+            return true;
+        }
+        let from = current.rect.center();
+        let dir = dir.normalize_or_zero();
+        // Buttons within 45 degrees of the direction first; any button on
+        // that side when none is.
+        let mut best: Option<(bool, f32, Vec2)> = None;
+        for f in self.focusables() {
+            let d = f.rect.center() - from;
+            let along = d.dot(dir);
+            if along <= 0.001 {
+                continue;
+            }
+            let across = (d - dir * along).length();
+            let outside_cone = across > along;
+            let score = along + across * 2.0;
+            if best.map_or(true, |(o, s, _)| (outside_cone, score) < (o, s)) {
+                best = Some((outside_cone, score, f.rect.center()));
+            }
+        }
+        match best {
+            Some((_, _, p)) => {
+                self.focus = Some(p);
+                true
+            }
+            None => false,
+        }
+    }
+
+    /// Where a gamepad's confirm button clicks: the focused button's centre.
+    /// Shows the focus.
+    pub fn focus_point(&mut self) -> Option<Vec2> {
+        let f = self.focused()?;
+        set_focus_visible(true);
+        self.focus = Some(f.rect.center());
+        Some(f.rect.center())
     }
 
     pub fn click(&mut self, pos: Vec2) -> Option<Message> {
@@ -693,6 +848,7 @@ impl ButtonParam {
 #[derive(Debug)]
 pub struct Button<Message: Clone> {
     is_active: bool,
+    is_default_focus: bool,
     sprite: Sprite,
     bg: Sprite,
     border: Sprite,
@@ -727,6 +883,7 @@ impl<Message: Clone + Debug> Button<Message> {
         let bg = Self::make_bg_mesh(height, outer);
         Ok(Self {
             is_active: true,
+            is_default_focus: false,
             sprite,
             bg,
             border,
@@ -754,6 +911,12 @@ impl<Message: Clone + Debug> Button<Message> {
 
     pub fn is_active(&self) -> bool {
         self.is_active
+    }
+
+    /// Makes this the button a gamepad focuses first.
+    pub fn default_focus(mut self) -> Self {
+        self.is_default_focus = true;
+        self
     }
 
     pub fn stretchable(mut self, value: bool) -> Self {
@@ -793,6 +956,13 @@ impl<Message: Clone + Debug> Widget for Button<Message> {
         self.bg.draw();
         self.sprite.draw();
         self.border.draw();
+    }
+
+    fn collect_focusable(&self, out: &mut Vec<Focusable>) {
+        out.push(Focusable {
+            rect: self.border.rect(),
+            is_default: self.is_default_focus,
+        });
     }
 
     fn click(&self, pos: Vec2) {
@@ -881,6 +1051,12 @@ impl Widget for Layout {
         }
     }
 
+    fn collect_focusable(&self, out: &mut Vec<Focusable>) {
+        for widget in &self.widgets {
+            widget.collect_focusable(out);
+        }
+    }
+
     fn move_mouse(&mut self, pos: Vec2) {
         for widget in &mut self.widgets {
             widget.move_mouse(pos);
@@ -966,6 +1142,10 @@ impl Widget for VLayout {
         self.internal.click(pos);
     }
 
+    fn collect_focusable(&self, out: &mut Vec<Focusable>) {
+        self.internal.collect_focusable(out);
+    }
+
     fn move_mouse(&mut self, pos: Vec2) {
         self.internal.move_mouse(pos);
     }
@@ -1027,6 +1207,10 @@ impl Widget for HLayout {
 
     fn click(&self, pos: Vec2) {
         self.internal.click(pos);
+    }
+
+    fn collect_focusable(&self, out: &mut Vec<Focusable>) {
+        self.internal.collect_focusable(out);
     }
 
     fn move_mouse(&mut self, pos: Vec2) {
@@ -1105,6 +1289,10 @@ impl Widget for LayersLayout {
 
     fn click(&self, pos: Vec2) {
         self.internal.click(pos);
+    }
+
+    fn collect_focusable(&self, out: &mut Vec<Focusable>) {
+        self.internal.collect_focusable(out);
     }
 
     fn move_mouse(&mut self, pos: Vec2) {
