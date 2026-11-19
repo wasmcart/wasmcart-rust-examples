@@ -171,7 +171,7 @@ impl Battle {
 
     pub(super) fn pad_prompts(&self) -> Vec<screen::Prompt> {
         if self.panel_end_turn.is_none() && self.mode == SelectionMode::Normal {
-            return vec![("...", "the enemy moves")];
+            return vec![("Wait", "the enemy moves")];
         }
         match (self.selected_agent_id, self.mode) {
             (Some(_), SelectionMode::Ability(_)) => {

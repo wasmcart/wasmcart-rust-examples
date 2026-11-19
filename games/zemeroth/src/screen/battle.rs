@@ -322,7 +322,8 @@ fn build_panel_ability_description(
         layout.add(Box::new(label));
     }
     layout.add(Box::new(ui::Spacer::new_vertical(h / 2.0)));
-    let text_cancel = text("Click on an empty tile or the ability icon to cancel.");
+    let text_cancel =
+        text("Click on an empty tile or the ability icon (B on a gamepad) to cancel.");
     let color_cancel = Color::new(0.4, 0.4, 0.4, 1.0);
     let label_cancel_text = ui::Label::new(text_cancel, h)?.with_color(color_cancel);
     layout.add(Box::new(label_cancel_text));

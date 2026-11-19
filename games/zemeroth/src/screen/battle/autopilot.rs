@@ -186,10 +186,6 @@ fn decide(b: &mut Battle) -> Pad {
     }
     b.autopilot.presses += 1;
     if b.autopilot.presses > MAX_PRESSES {
-        wasmcart_macroquad::log(&format!(
-            "autopilot: stuck on {:?}, ending the turn",
-            b.autopilot.plan
-        ));
         b.autopilot.plan = None;
         return if b.mode == SelectionMode::Normal {
             Pad { y: true, ..idle }
