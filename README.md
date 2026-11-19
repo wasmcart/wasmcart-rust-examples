@@ -44,6 +44,8 @@ buttons each cart declares.
 
 ### Hexbloom (macroquad)
 
+![Hexbloom: a thorn flower boss in a hex arena](games/hexbloom/art/screenshot-2.png)
+
 A twin-stick arena shooter in a glowing hex garden. Seeds swarm, darters
 crouch and dash, splitters burst into sprouts and orbiters lob thorns. Every
 enemy you clear makes its floor cell bloom in its colour, so the arena fills
@@ -64,6 +66,8 @@ First goal: fell the first thorn flower at wave 4.
 
 ### Tetherline (macroquad)
 
+![Tetherline: swinging on a tether across a gap](games/tetherline/art/screenshot-1.png)
+
 A swinging platformer across five islands. Hold B and your tether catches
 the ring marked ahead of you; push to swing higher, let go at the top of the
 arc and fly. Reel the line in to climb over walls. Signs on the first island
@@ -83,6 +87,8 @@ First goal: reach the flag of island 1. Five tries an island; out of tries,
 you start that island again.
 
 ### Bumper Floe (macroquad, 1 to 4 players)
+
+![Bumper Floe: four bumpers on a cracking ice floe](games/floe/art/screenshot-1.png)
 
 Round bumpers slide with real momentum on an ice floe that cracks and breaks
 off at the edges, then melts to a small core so every round ends. Charge a
@@ -105,6 +111,8 @@ Keyboard (player 1): arrows, Space dash, X or Shift brake, Enter start.
 First goal: win a match against EASY CPUs.
 
 ### Starwell (wgpu, 3D)
+
+![Starwell: a glider in the crystal canyon](games/starwell/art/screenshot-1.png)
 
 Fly a glider down an endless crystal canyon. Gold rings give energy and
 points, crystal pillars and beams cost energy, and the energy drains as you
@@ -134,6 +142,8 @@ core WebGPU devices and in compatibility mode, the tier's floor.
 
 ### Hillfold (Bevy, 3D)
 
+![Hillfold: the dog and the flock in Home Meadow](games/hillfold/art/screenshot-1.png)
+
 Herd a flock of sheep into the fold before sundown. Each sheep steers
 itself: it keeps to the flock, flees the dog, walks round walls and knows
 the way home, so you drive the flock by where you stand. Run behind them to
@@ -160,6 +170,8 @@ First goal: pen 10 of the 12 sheep in Home Meadow. Missing a field's
 target at sundown ends the run; A tries that field again.
 
 ### Lantern Links (Bevy, 2D)
+
+![Lantern Links: aiming a putt on hole 1](games/lantern-links/art/screenshot-1.png)
 
 Nine holes of minigolf in a night garden lit by lanterns: a straight
 opener with a stone post, a dogleg, a ring of sand round the cup, a brook
