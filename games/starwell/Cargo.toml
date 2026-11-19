@@ -1,0 +1,15 @@
+[package]
+name = "starwell"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "Fly a glider down an endless crystal canyon and thread its ring gates."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# std gives the cart Rust's allocator; wgpu needs one.
+wasmcart = { git = "https://github.com/wasmcart/wasmcart-rust", rev = "90d7482", features = ["std"] }
+wasmcart-wgpu = { git = "https://github.com/wasmcart/wasmcart-rust", rev = "90d7482" }
