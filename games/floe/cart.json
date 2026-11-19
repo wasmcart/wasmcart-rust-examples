@@ -1,0 +1,7 @@
+{
+  "title": "Bumper Floe",
+  "description": "Up to four round bumpers slide on a breaking ice floe. Charge a dash, shove the others into the sea, and be the last one standing. 1 to 4 players, CPU bumpers fill empty seats.",
+  "author": "wasmcart-rust-examples",
+  "controls": "dpad,left_stick,a,b,start",
+  "players": 4
+}
