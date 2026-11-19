@@ -1,0 +1,7 @@
+{
+  "title": "Tetherline",
+  "description": "A swinging platformer. Fire a tether at the glowing rings, swing across the gaps and let go at the top of the arc. Five islands, sun shards to find, a flag at the end of each.",
+  "author": "wasmcart-rust-examples",
+  "controls": "dpad,left_stick,a,b,start",
+  "players": 1
+}

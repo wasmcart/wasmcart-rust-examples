@@ -260,7 +260,7 @@ checksum = "60302e4db3a61da70c0cb7991976248362f30319e88850c487b9b95bbf059e00"
 [[package]]
 name = "miniquad"
 version = "0.4.11"
-source = "git+https://github.com/wasmcart/wasmcart-macroquad?rev=bae359f#bae359f8c3c3a9fea40b6bcc3effc25adc4214e3"
+source = "git+https://github.com/wasmcart/wasmcart-macroquad?rev=eb7b0f5#eb7b0f552241e9ef10a7414fb928cf5390ae9aff"
 dependencies = [
  "libc",
  "ndk-sys",
@@ -388,6 +388,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tetherline"
+version = "0.1.0"
+dependencies = [
+ "macroquad",
+ "wasmcart-macroquad",
+]
+
+[[package]]
 name = "tinyvec"
 version = "1.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -410,7 +418,7 @@ source = "git+https://github.com/wasmcart/wasmcart-rust?rev=283d82e#283d82e16e5a
 [[package]]
 name = "wasmcart-macroquad"
 version = "0.1.0"
-source = "git+https://github.com/wasmcart/wasmcart-macroquad?rev=bae359f#bae359f8c3c3a9fea40b6bcc3effc25adc4214e3"
+source = "git+https://github.com/wasmcart/wasmcart-macroquad?rev=eb7b0f5#eb7b0f552241e9ef10a7414fb928cf5390ae9aff"
 dependencies = [
  "lewton 0.10.2",
  "wasmcart",

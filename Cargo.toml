@@ -4,7 +4,7 @@ members = ["games/*"]
 
 # macroquad games: miniquad with the wasmcart backend (wasmcart-macroquad).
 [patch.crates-io]
-miniquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "bae359f" }
+miniquad = { git = "https://github.com/wasmcart/wasmcart-macroquad", rev = "eb7b0f5" }
 
 [profile.release]
 opt-level = "s"

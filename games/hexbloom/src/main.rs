@@ -84,6 +84,43 @@ impl Pads {
     }
 }
 
+// ─── autopilot ──────────────────────────────────────────────────────────
+
+/// A test autopilot, switched on by a debug host writing `autopilot = 1`
+/// (romdev `wasm({op:'write'})`, `CartHost.writeDebugValue`); a cart built
+/// without the `debug` feature never has it on. It plays as the title screen
+/// teaches: left stick away from the closest threat, right stick at the
+/// nearest enemy, B when something is about to touch it.
+fn autopilot(g: &Game, frame: u32) -> Input {
+    let mut inp = Input::default();
+    if g.mode != Mode::Play {
+        inp.confirm = matches!(g.mode, Mode::Title | Mode::Over | Mode::Won) && frame % 30 == 0;
+        return inp;
+    }
+    let threat = g
+        .thorns
+        .iter()
+        .map(|t| t.pos)
+        .chain(g.enemies.iter().map(|e| e.pos))
+        .min_by(|a, b| a.distance_squared(g.pos).total_cmp(&b.distance_squared(g.pos)));
+    let centre = vec2(W / 2.0, (AY0 + AY1) / 2.0);
+    let mut mv = vec2((centre.x - g.pos.x) / 300.0, (centre.y - g.pos.y) / 200.0);
+    if let Some(t) = threat {
+        let d = t - g.pos;
+        let l = d.length();
+        if l < 150.0 {
+            let away = -d / l.max(1.0);
+            mv = away + vec2(-away.y, away.x) * 0.6;
+        }
+        inp.bomb = l < 40.0 && g.bombs > 0 && frame % 20 == 0;
+    }
+    inp.mv = mv.clamp_length_max(1.0);
+    if let Some(e) = g.nearest_enemy() {
+        inp.aim = (e - g.pos).normalize_or_zero();
+    }
+    inp
+}
+
 // ─── world ──────────────────────────────────────────────────────────────
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -1236,10 +1273,13 @@ async fn main() {
 
     let mut pads = Pads { prev: 0 };
     let mut g = Game::new();
+    let mut frame = 0u32;
     loop {
         let dt = get_frame_time().min(1.0 / 20.0);
         let t = get_time() as f32;
+        frame += 1;
         let inp = pads.read();
+        let inp = if wc::debug::input_i32("autopilot", 0) != 0 { autopilot(&g, frame) } else { inp };
         g.update(&inp, dt, &snd);
 
         wc::debug::set_i32("mode", g.mode as i32);
