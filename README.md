@@ -13,6 +13,12 @@ a 3D game on raw [wgpu](https://wgpu.rs) through `wasmcart-wgpu` from
 [wasmcart-rust](https://github.com/wasmcart/wasmcart-rust), on wasmcart's
 WebGPU tier.
 
+Related: [wasmcart-rust](https://github.com/wasmcart/wasmcart-rust) (the
+cart bindings, GL and `wasmcart-wgpu`),
+[wasmcart-macroquad](https://github.com/wasmcart/wasmcart-macroquad) and
+[wasmcart-bevy](https://github.com/wasmcart/wasmcart-bevy) (Bevy games as
+carts).
+
 ## Quick start
 
 **Just want to play?** Prebuilt carts are attached to the
