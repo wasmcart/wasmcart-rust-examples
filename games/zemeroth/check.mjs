@@ -28,7 +28,7 @@ export default async function ({ file, shots, boot, check, control, pad, idle, B
     const c = await boot(file);
     await toMenu(c);
     const menu = await c.grab();
-    savePng(shots, 'menu.png', menu);
+    savePng(shots, 'title.png', menu);
     check('zemeroth: the main menu draws', c.v('screen') === SCREEN.MENU && colours(menu) > 12, `screen ${c.v('screen')}, ${colours(menu)} colours`);
     control('a black frame as the menu', colours(black(menu)) > 12);
     check('zemeroth: pad prompts show on the menu', promptPx(menu) > 200, `${promptPx(menu)} px`);
@@ -103,6 +103,7 @@ export default async function ({ file, shots, boot, check, control, pad, idle, B
   const playBattle = async (c, pressAdvice) => {
     let f = 0;
     let moving = null;
+    let midShot = false;
     while (c.v('screen') !== SCREEN.CAMPAIGN && f < 30000) {
       const bits = c.v('ap_bits') || 0;
       if (pressAdvice && bits) {
@@ -112,6 +113,10 @@ export default async function ({ file, shots, boot, check, control, pad, idle, B
       } else {
         await c.run(1, both(idle()));
         f += 1;
+      }
+      if (!midShot && c.v('enemy_agents') === 2 && c.v('can_end_turn') === 1 && c.v('blocked') === 0) {
+        midShot = true;
+        savePng(shots, 'play-1.png', await c.grab());
       }
       if (moving === null && c.v('can_end_turn') === 0 && c.v('blocked') === 1) {
         // The enemy's turn: imps walk and strike.
@@ -144,6 +149,7 @@ export default async function ({ file, shots, boot, check, control, pad, idle, B
     await tap(c, BTN.X);
     check('zemeroth: X picks an ability', c.v('ability_mode') === 1);
     const ability = await c.grab();
+    savePng(shots, 'play-2.png', ability);
     check('zemeroth: the ability shows its tiles and description', changed(before, ability) > 2000, `${changed(before, ability)} px changed`);
     control('a frame compared with itself as a change', changed(before, before) > 2000);
     await tap(c, BTN.B);

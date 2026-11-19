@@ -1,0 +1,8 @@
+{
+  "title": "Zemeroth",
+  "description": "A turn-based hexagonal tactics game by Andrey Lesnikov. Lead a small band of fighters through a campaign of short, brutal battles against imps and their summoners: shove, jump, throw bombs and strike first.",
+  "author": "Andrey Lesnikov (port: wasmcart-rust-examples)",
+  "controls": "dpad,left_stick,a,b,x,y,l,r,start,select",
+  "players": 1,
+  "version": "0.1.0"
+}

@@ -124,6 +124,23 @@ const GAMES = {
       ctx.fillStyle = '#fafaf4'; ctx.beginPath(); ctx.arc(S*0.31, S*0.62, S*0.05, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = 'rgba(255,240,190,0.85)'; for (let k = 1; k < 5; k++) { ctx.beginPath(); ctx.arc(S*(0.31 + k*0.07), S*(0.62 - k*0.012), S*0.012, 0, Math.PI*2); ctx.fill(); }`,
   },
+  zemeroth: {
+    title: 'ZEMEROTH',
+    tagline: 'Turn-based hexagonal tactics',
+    bg: '#2b2418', ink: '#f2e6c4', glow: '#a02c2c',
+    // The icon is made of the game's own sprites (Andrey Lesnikov's art).
+    sprites: { tile: 'games/zemeroth/assets/img/tile.png', hero: 'games/zemeroth/assets/img/swordsman.png', imp: 'games/zemeroth/assets/img/imp.png' },
+    shots: [['play-1.png', 'Swordsman and spearman holding the line against three imps'], ['play-2.png', 'The spearman picking a tile for his long jump'], ['campaign-2.png', 'The campaign after the first victory: recruits and upgrades for renown']],
+    icon: `
+      ctx.fillStyle = '#2b2418'; ctx.fillRect(0, 0, S, S);
+      const g = ctx.createRadialGradient(S/2, S*0.62, S*0.05, S/2, S*0.62, S*0.6); g.addColorStop(0, '#5a4630'); g.addColorStop(1, '#2b2418'); ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      const tile = await load(SPR.tile), hero = await load(SPR.hero), imp = await load(SPR.imp);
+      const tw = S*0.62, th = tw * tile.height / tile.width;
+      ctx.drawImage(tile, S*0.04, S*0.6, tw, th);
+      ctx.drawImage(tile, S*0.34, S*0.5, tw, th);
+      ctx.save(); ctx.translate(S*0.98, 0); ctx.scale(-1, 1); ctx.drawImage(imp, S*0.0, S*0.12, S*0.62, S*0.62); ctx.restore();
+      ctx.drawImage(hero, S*0.0, S*0.24, S*0.66, S*0.66);`,
+  },
 };
 
 const PAGE =`<!doctype html><html><body style="margin:0;background:transparent"><canvas id=c></canvas></body></html>`;
@@ -157,7 +174,8 @@ for (const name of games) {
   }
   mkdirSync(out, { recursive: true });
   const play = JSON.stringify(dataUrl(path.join(shots, g.shots[g.keyShot ?? 0][0])));
-  const vars = `const C = ${JSON.stringify(g)}; const FONT = ${JSON.stringify(FONT)};`;
+  const sprites = Object.fromEntries(Object.entries(g.sprites || {}).map(([k, f]) => [k, dataUrl(path.join(ROOT, f))]));
+  const vars = `const C = ${JSON.stringify(g)}; const FONT = ${JSON.stringify(FONT)}; const SPR = ${JSON.stringify(sprites)};`;
   // Titles are drawn with a soft glow and a dark edge so they read on any art.
   const titleText = `
     function title(text, x, y, size, maxW) {
