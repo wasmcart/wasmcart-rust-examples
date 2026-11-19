@@ -1,0 +1,10 @@
+{
+  "title": "Lantern Links",
+  "description": "Nine holes of minigolf in a lantern-lit night garden: bank shots, sand, a brook, slopes, bumpers and a spinning turnstile. Aim, hold to charge, release to putt.",
+  "author": "wasmcart-rust-examples",
+  "controls": "left_stick,dpad,a,b,start",
+  "players": 1,
+  "target": "wasm32-wasip1",
+  "width": 960,
+  "height": 540
+}

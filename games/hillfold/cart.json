@@ -1,0 +1,10 @@
+{
+  "title": "Hillfold",
+  "description": "Herd a flock of sheep into the fold before sundown. Run behind them to drive them, bark to hurry them, sneak to slip past. Five fields, each wider and wilder.",
+  "author": "wasmcart-rust-examples",
+  "controls": "left_stick,dpad,a,b,start",
+  "players": 1,
+  "target": "wasm32-wasip1",
+  "width": 960,
+  "height": 540
+}

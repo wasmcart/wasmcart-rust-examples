@@ -1,0 +1,27 @@
+[package]
+name = "lantern-links"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+description = "Nine holes of minigolf in a lantern-lit night garden."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasmcart-bevy = { git = "https://github.com/wasmcart/wasmcart-bevy", rev = "52cc476", features = ["render"] }
+# The cart bindings, for pad rumble (the same source wasmcart-bevy uses).
+wasmcart = { git = "https://github.com/wasmcart/wasmcart-rust", features = ["std"] }
+bevy = { version = "0.20.1", default-features = false, features = [
+    "std",
+    "bevy_asset",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_sprite",
+    "bevy_sprite_render",
+    "bevy_ui",
+    "bevy_ui_render",
+    "bevy_text",
+    "default_font",
+] }

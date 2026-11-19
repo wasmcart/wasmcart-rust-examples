@@ -1,0 +1,30 @@
+[package]
+name = "hillfold"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "MIT"
+description = "Herd a flock of sheep into the fold before sundown, across five fields."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasmcart-bevy = { git = "https://github.com/wasmcart/wasmcart-bevy", rev = "52cc476", features = ["render"] }
+# The cart bindings, for pad rumble (the same source wasmcart-bevy uses).
+wasmcart = { git = "https://github.com/wasmcart/wasmcart-rust", features = ["std"] }
+bevy = { version = "0.20.1", default-features = false, features = [
+    "std",
+    "bevy_asset",
+    "bevy_render",
+    "bevy_core_pipeline",
+    "bevy_pbr",
+    "bevy_light",
+    "tonemapping_luts",
+    "ktx2",
+    "zstd_rust",
+    "bevy_ui",
+    "bevy_ui_render",
+    "bevy_text",
+    "default_font",
+] }

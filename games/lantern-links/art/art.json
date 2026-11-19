@@ -1,0 +1,21 @@
+{
+  "icon": "icon.png",
+  "cover": "cover.jpg",
+  "background": "background.jpg",
+  "logo": "logo.png",
+  "title": "title.png",
+  "screenshots": [
+    {
+      "path": "screenshot-1.png",
+      "label": "Lining up the first putt between the lanterns"
+    },
+    {
+      "path": "screenshot-2.png",
+      "label": "Timing a putt past the spinning turnstile"
+    },
+    {
+      "path": "screenshot-3.png",
+      "label": "The scorecard at the end of the round"
+    }
+  ]
+}

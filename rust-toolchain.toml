@@ -1,0 +1,4 @@
+# Bevy 0.20 needs Rust 1.97 or newer; the other games build on it too.
+[toolchain]
+channel = "stable"
+targets = ["wasm32-unknown-unknown", "wasm32-wasip1"]

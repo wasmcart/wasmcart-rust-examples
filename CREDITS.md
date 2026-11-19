@@ -14,8 +14,12 @@ to rebuild them.
 ## Pictures
 
 - In-game graphics are drawn by the games' own code (macroquad shapes,
-  wgpu meshes and shaders, a 5x7 bitmap font in Starwell's `font.rs`).
-  There are no image assets.
+  wgpu meshes and shaders, a 5x7 bitmap font in Starwell's `font.rs`, Bevy
+  meshes built from primitives and vertex colours in Hillfold and Lantern
+  Links, Lantern Links' glow texture made in code). There are no image
+  assets.
+- Lantern Links' course, `games/lantern-links/assets/holes.txt`, was
+  written by hand for this repository. Original, CC0 1.0.
 - Launcher art under `games/*/art/` (icon, cover, background, logo, title
   screen, screenshots) is made by `scripts/make-art.mjs`: the title screen
   and screenshots are frames of the games themselves, and the icon, cover,
@@ -29,7 +33,10 @@ to rebuild them.
 
 The macroquad games draw text with macroquad's built-in font, ProggyClean
 (Copyright (c) 2004, 2005 Tristan Grimmer, MIT licence), which macroquad
-embeds. Starwell draws its own bitmap font, written for it.
+embeds. Starwell draws its own bitmap font, written for it. The Bevy games
+use Bevy's default font (Bevy's `default_font` feature), Fira Mono
+(Copyright (c) 2012-2015 The Mozilla Foundation and Telefonica S.A., SIL
+Open Font License 1.1), which Bevy embeds.
 
 ## Libraries linked into the carts
 
@@ -39,4 +46,8 @@ embeds. Starwell draws its own bitmap font, written for it.
 - [wgpu](https://github.com/gfx-rs/wgpu): MIT or Apache-2.0.
 - [wasmcart-rust](https://github.com/wasmcart/wasmcart-rust) (`wasmcart`,
   `wasmcart-wgpu`): MIT.
+- [Bevy](https://github.com/bevyengine/bevy): MIT or Apache-2.0, with three
+  of its crates as patched by
+  [wasmcart-bevy](https://github.com/wasmcart/wasmcart-bevy) (MIT or
+  Apache-2.0), which also links into the Bevy games.
 - Their dependencies, as listed in `Cargo.lock`, under their own licences.

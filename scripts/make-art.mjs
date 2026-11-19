@@ -84,9 +84,49 @@ const GAMES = {
       ctx.fillStyle = '#eef6ff'; ctx.beginPath(); ctx.moveTo(S*0.5, S*0.68); ctx.lineTo(S*0.3, S*0.8); ctx.lineTo(S*0.7, S*0.8); ctx.fill();
       for (const x of [0.44, 0.56]) { ctx.fillStyle = 'rgba(200,240,255,0.5)'; ctx.fillRect(S*x - S*0.01, S*0.8, S*0.02, S*0.15); }`,
   },
+  hillfold: {
+    title: 'HILLFOLD',
+    tagline: 'Herd the flock home before sundown',
+    bg: '#2a3a1c', ink: '#fff6dc', glow: '#ff9a40',
+    keyShot: 1, // the first shot carries a hint; key art has none
+    shots: [['play-1.png', 'The dog driving the flock across Home Meadow'], ['play-2.png', 'Stone walls to steer round on the second field'], ['cleared.png', 'The fold full and the gate shut as the sun gets low']],
+    icon: `
+      const g = ctx.createLinearGradient(0, 0, 0, S); g.addColorStop(0, '#f4b066'); g.addColorStop(0.45, '#f7d79a'); g.addColorStop(0.46, '#5e9a3c'); g.addColorStop(1, '#3c6e28'); ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+      ctx.fillStyle = '#ffe6a0'; ctx.beginPath(); ctx.arc(S*0.74, S*0.36, S*0.09, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#4f8a33'; ctx.beginPath(); ctx.ellipse(S*0.3, S*0.52, S*0.45, S*0.12, 0, Math.PI, 0); ctx.fill();
+      ctx.strokeStyle = '#7a5232'; ctx.lineWidth = S*0.018;
+      for (const y of [0.66, 0.74]) { ctx.beginPath(); ctx.moveTo(S*0.52, S*y); ctx.lineTo(S*0.92, S*y); ctx.stroke(); }
+      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.moveTo(S*(0.54 + k*0.09), S*0.62); ctx.lineTo(S*(0.54 + k*0.09), S*0.8); ctx.stroke(); }
+      const sheep = (x, y, s) => { ctx.fillStyle = '#f4f1ea'; for (const [dx, dy, r] of [[0, 0, 0.07], [-0.05, 0.01, 0.05], [0.05, 0.01, 0.05], [0, -0.04, 0.05]]) { ctx.beginPath(); ctx.arc(S*(x + dx*s), S*(y + dy*s), S*r*s, 0, Math.PI*2); ctx.fill(); }
+        ctx.fillStyle = '#2a2420'; ctx.beginPath(); ctx.ellipse(S*(x + 0.08*s), S*(y - 0.01*s), S*0.035*s, S*0.03*s, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillRect(S*(x - 0.04*s), S*(y + 0.05*s), S*0.015*s, S*0.05*s); ctx.fillRect(S*(x + 0.03*s), S*(y + 0.05*s), S*0.015*s, S*0.05*s); };
+      sheep(0.2, 0.76, 1.2); sheep(0.38, 0.84, 1.0); sheep(0.3, 0.62, 0.8);
+      ctx.fillStyle = '#231a14'; ctx.beginPath(); ctx.ellipse(S*0.1, S*0.9, S*0.06, S*0.035, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(S*0.15, S*0.86, S*0.03, 0, Math.PI*2); ctx.fill();`,
+  },
+  'lantern-links': {
+    title: 'LANTERN LINKS',
+    tagline: 'Night-garden minigolf',
+    bg: '#06100e', ink: '#ffe0a0', glow: '#ffae4a',
+    keyShot: 1,
+    shots: [['play-1.png', 'Lining up the first putt between the lanterns'], ['play-2.png', 'Timing a putt past the spinning turnstile'], ['card.png', 'The scorecard at the end of the round']],
+    icon: `
+      ctx.fillStyle = '#06100e'; ctx.fillRect(0, 0, S, S);
+      const glow = (x, y, r) => { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,190,100,0.55)'); g.addColorStop(1, 'rgba(255,190,100,0)'); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r*2, r*2); };
+      ctx.fillStyle = '#8a7462'; ctx.fillRect(S*0.08, S*0.2, S*0.84, S*0.66);
+      const g2 = ctx.createLinearGradient(0, S*0.26, 0, S*0.8); g2.addColorStop(0, '#2f6a35'); g2.addColorStop(1, '#3d7d40'); ctx.fillStyle = g2; ctx.fillRect(S*0.14, S*0.26, S*0.72, S*0.54);
+      glow(S*0.12, S*0.18, S*0.3); glow(S*0.88, S*0.18, S*0.3);
+      ctx.fillStyle = '#ffe2a8'; for (const x of [0.12, 0.88]) { ctx.beginPath(); ctx.arc(S*x, S*0.16, S*0.035, 0, Math.PI*2); ctx.fill(); }
+      ctx.fillStyle = '#0a0a08'; ctx.beginPath(); ctx.arc(S*0.68, S*0.56, S*0.06, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = S*0.014; ctx.beginPath(); ctx.moveTo(S*0.68, S*0.56); ctx.lineTo(S*0.68, S*0.32); ctx.stroke();
+      ctx.fillStyle = '#ffb648'; ctx.beginPath(); ctx.moveTo(S*0.68, S*0.32); ctx.lineTo(S*0.8, S*0.36); ctx.lineTo(S*0.68, S*0.4); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.arc(S*0.33, S*0.64, S*0.05, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#fafaf4'; ctx.beginPath(); ctx.arc(S*0.31, S*0.62, S*0.05, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,240,190,0.85)'; for (let k = 1; k < 5; k++) { ctx.beginPath(); ctx.arc(S*(0.31 + k*0.07), S*(0.62 - k*0.012), S*0.012, 0, Math.PI*2); ctx.fill(); }`,
+  },
 };
 
-const PAGE = `<!doctype html><html><body style="margin:0;background:transparent"><canvas id=c></canvas></body></html>`;
+const PAGE =`<!doctype html><html><body style="margin:0;background:transparent"><canvas id=c></canvas></body></html>`;
 
 async function render(page, w, h, body, type = 'png') {
   const url = await page.evaluate(async ({ w, h, body, type }) => {
