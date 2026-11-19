@@ -13,6 +13,14 @@ mod utils;
 
 type ZResult<T = ()> = Result<T, error::ZError>;
 
+// See getrandom in Cargo.toml: nothing asks it for numbers.
+#[cfg(target_arch = "wasm32")]
+fn no_os_random(_: &mut [u8]) -> Result<(), getrandom::Error> {
+    Err(getrandom::Error::UNSUPPORTED)
+}
+#[cfg(target_arch = "wasm32")]
+getrandom::register_custom_getrandom!(no_os_random);
+
 struct MainState {
     screens: screen::ScreenStack,
 }

@@ -26,10 +26,10 @@ enum Drawable {
 impl Drawable {
     fn dimensions(&self) -> Rect {
         match *self {
-            Drawable::Texture(texture) => Rect::new(0.0, 0.0, texture.width(), texture.height()),
+            Drawable::Texture(ref texture) => Rect::new(0.0, 0.0, texture.width(), texture.height()),
             Drawable::Text {
                 ref label,
-                font,
+                ref font,
                 font_size,
             } => {
                 let dimensions = text::measure_text(label, Some(font), font_size, 1.0);
@@ -107,13 +107,13 @@ impl Sprite {
         Self::from_drawable(Drawable::Texture(texture), height)
     }
 
-    pub fn from_text((label, font): (&str, Font), height: f32) -> Self {
+    pub fn from_text((label, font): (&str, &Font), height: f32) -> Self {
         // TODO: it'd be cool to move this to the drawing method (same as in zgui)
         let (font_size, _, _) = mq::text::camera_font_scale(height);
         Self::from_drawable(
             Drawable::Text {
                 label: label.to_string(),
-                font,
+                font: font.clone(),
                 font_size,
             },
             height,
@@ -126,10 +126,10 @@ impl Sprite {
     }
 
     pub fn from_textures(frames: &HashMap<String, Texture2D>, height: f32) -> Self {
-        let tex = *frames.get("").expect("missing default path");
+        let tex = frames.get("").expect("missing default path").clone();
         let mut this = Self::from_texture(tex, height);
-        for (frame_name, &tex) in frames.iter() {
-            this.add_frame(frame_name.clone(), Drawable::Texture(tex));
+        for (frame_name, tex) in frames.iter() {
+            this.add_frame(frame_name.clone(), Drawable::Texture(tex.clone()));
         }
         this
     }
@@ -202,7 +202,7 @@ impl Sprite {
         match drawable {
             Drawable::Texture(texture) => {
                 texture::draw_texture_ex(
-                    *texture,
+                    texture,
                     data.pos.x,
                     data.pos.y,
                     data.color,
@@ -223,7 +223,7 @@ impl Sprite {
                     data.pos.y + (data.dimensions.y + data.dimensions.h) * data.scale.y * 0.5,
                     text::TextParams {
                         font_size: *font_size,
-                        font: *font,
+                        font: Some(font),
                         font_scale: data.scale.x,
                         color: data.color,
                         ..Default::default()

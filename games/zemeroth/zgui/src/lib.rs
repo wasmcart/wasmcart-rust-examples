@@ -29,6 +29,15 @@ pub const SPRITE_COLOR_BUTTON_BORDER: Color = Color::new(0.0, 0.0, 0.0, 0.9);
 
 pub type Result<T = ()> = std::result::Result<T, Error>;
 
+/// A camera that shows `rect` with y growing downwards, as macroquad 0.3's
+/// `Camera2D::from_display_rect` did. macroquad 0.4 flips y once more for
+/// cameras that draw to the screen, so the zoom's sign flips back here.
+pub fn display_rect_camera(rect: Rect) -> Camera2D {
+    let mut camera = Camera2D::from_display_rect(rect);
+    camera.zoom.y = -camera.zoom.y;
+    camera
+}
+
 #[derive(Debug)]
 pub enum Error {
     BadBorderCoefficient,
@@ -78,10 +87,10 @@ pub enum Drawable {
 }
 
 impl Drawable {
-    pub fn text(label: impl Into<String>, font: Font) -> Drawable {
+    pub fn text(label: impl Into<String>, font: &Font) -> Drawable {
         Drawable::Text {
             label: label.into(),
-            font,
+            font: font.clone(),
             // TODO: this field doesn't mean much with new macroquad since
             //   we're using camera_font_scale vefore rendering it anyway.
             //   But it's somewhat tricky to remove this so I'm putting this constant here for now.
@@ -91,12 +100,12 @@ impl Drawable {
 
     fn dimensions(&self) -> Rect {
         match *self {
-            Drawable::Texture(texture) => {
+            Drawable::Texture(ref texture) => {
                 Rect::new(0.0, 0.0, texture.width() as _, texture.height() as _)
             }
             Drawable::Text {
                 ref label,
-                font,
+                ref font,
                 font_size,
             } => {
                 let dimensions = measure_text(label, Some(font), font_size, 1.0);
@@ -136,7 +145,7 @@ impl Sprite {
 
     fn draw(&self) {
         match self.drawable {
-            Drawable::Texture(texture) => {
+            Drawable::Texture(ref texture) => {
                 draw_texture_ex(
                     texture,
                     self.pos.x,
@@ -150,7 +159,7 @@ impl Sprite {
             }
             Drawable::Text {
                 ref label,
-                font,
+                ref font,
                 font_size,
             } => {
                 // desired font size in camera space
@@ -163,10 +172,11 @@ impl Sprite {
                     self.pos.y + (self.dimensions.y + self.dimensions.h) * self.scale.y * 0.5,
                     TextParams {
                         font_size,
-                        font,
+                        font: Some(font),
                         font_scale,
                         font_scale_aspect,
                         color: self.color,
+                        ..Default::default()
                     },
                 );
             }
@@ -327,7 +337,7 @@ impl<Message: Clone> Gui<Message> {
 
     pub fn draw(&self) {
         let ui_coordinates = Rect::new(-self.aspect_ratio, -1.0, self.aspect_ratio * 2.0, 2.0);
-        set_camera(&Camera2D::from_display_rect(ui_coordinates));
+        set_camera(&display_rect_camera(ui_coordinates));
         for AnchoredWidget { widget, .. } in &self.anchored_widgets {
             widget.borrow().draw();
         }

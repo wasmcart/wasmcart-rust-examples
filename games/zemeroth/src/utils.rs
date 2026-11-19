@@ -78,7 +78,7 @@ pub fn aspect_ratio() -> f32 {
 }
 
 pub fn make_and_set_camera(aspect_ratio: f32) -> Camera2D {
-    let camera = Camera2D::from_display_rect(Rect {
+    let camera = ui::display_rect_camera(Rect {
         x: -aspect_ratio,
         y: -1.0,
         w: aspect_ratio * 2.0,
